@@ -910,7 +910,8 @@ namespace CameraControl
 
 		private void MetroWindow_PreviewKeyDown (object sender, KeyEventArgs e)
 		{
-			if (txt_CaptureName.IsFocused)
+			// don't trigger single-key shortcuts (like O for onion skin) while typing in a text field
+			if (txt_CaptureName.IsFocused || Keyboard.FocusedElement is System.Windows.Controls.Primitives.TextBoxBase)
 				return;
 			TriggerClass.KeyDown(e);
 		}

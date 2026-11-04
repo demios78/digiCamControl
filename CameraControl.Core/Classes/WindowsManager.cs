@@ -171,6 +171,13 @@ namespace CameraControl.Core.Classes
 					case CmdConsts.PrevSeries:
 						item.SetKey(Key.Subtract);
 						break;
+					case WindowsCmdConsts.OnionSkin_Toggle:
+						item.SetKey(Key.O);
+						break;
+					case WindowsCmdConsts.OnionSkin_CyclePhotos:
+						item.SetKey(Key.O);
+						item.Shift = true;
+						break;
 				}
 			}
 		}

@@ -333,6 +333,42 @@
                                 </Grid>
                             </Expander>
                         </materialDesign:Card>
+                        <materialDesign:Card Margin="4">
+                            <Expander Header="{T:TranslateExtension LabelOnionSkin}" VerticalAlignment="Top" IsExpanded="False" Margin="0" Padding="0">
+                                <StackPanel Orientation="Vertical">
+                                    <Border Background="{DynamicResource MaterialDesignDivider}" Height="1" HorizontalAlignment="Stretch" SnapsToDevicePixels="True" />
+                                    <Grid Margin="24,8,24,16" DataContext="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Margin="4" Content="{T:TranslateExtension LabelOnionSkinShow}" IsChecked="{Binding OnionSkinEnabled}" />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Margin="4" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                   Text="{myClasess:CommandShortcutExtensioncs OnionSkin_Toggle}" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Margin="4,8,4,0" Text="{T:TranslateExtension LabelOnionSkinTransparency}" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Margin="4,8,4,0" Text="{Binding OnionSkinTransparency, StringFormat={}{0} %}" />
+                                        <Slider Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="4" Minimum="0" Maximum="100" SmallChange="1" LargeChange="10"
+                                                TickFrequency="10" TickPlacement="BottomRight" Value="{Binding OnionSkinTransparency}" IsEnabled="{Binding OnionSkinEnabled}" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Margin="4,8,4,0">
+                                            <Run Text="{T:TranslateExtension LabelOnionSkinPhotos}" />
+                                            <Run Text="{myClasess:CommandShortcutExtensioncs OnionSkin_CyclePhotos}" Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Margin="4,8,4,0" Text="{Binding OnionSkinFrames}" />
+                                        <Slider Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="4" Minimum="1" Maximum="4" SmallChange="1" LargeChange="1"
+                                                TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Value="{Binding OnionSkinFrames}" IsEnabled="{Binding OnionSkinEnabled}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Expander>
+                        </materialDesign:Card>
                         <!--<Border
                                 Height="1"
                                 HorizontalAlignment="Stretch"

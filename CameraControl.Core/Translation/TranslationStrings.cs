@@ -524,6 +524,10 @@ namespace CameraControl.Core.Translation
 		public static string LabelLowerCaseExtension = "Lower case extension";
 		public static string LabelOverlayTransparency = "Transparency";
 		public static string LabelOverlayUseLastCaptured = "Use last captured";
+		public static string LabelOnionSkin = "Onion skin";
+		public static string LabelOnionSkinShow = "Show previous photos";
+		public static string LabelOnionSkinTransparency = "Transparency";
+		public static string LabelOnionSkinPhotos = "Photos";
 		public static string LabelMinimizeToTryIcon = "Minimize to tray icon";
 		public static string LabelStartMinimized = "Start minimized";
 		public static string LabelStartupWithWindows = "Start when Windows starts";
