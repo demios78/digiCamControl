@@ -676,6 +676,33 @@ namespace CameraControl.Core.Classes
 			}
 		}
 
+		/// <summary>
+		/// Adds a file found in the session folder at its chronological position (by file date) instead
+		/// of at the end, so a photo that was temporarily missing from the folder (moved, renamed, restored
+		/// from the recycle bin) goes back to its place and does not become the "last" photo.
+		/// </summary>
+		public FileItem AddFileInDateOrder (string fileName)
+		{
+			lock (_locker)
+			{
+				FileItem oitem = GetFile(fileName);
+				if (oitem != null)
+					return oitem;
+				FileItem item = new FileItem(fileName);
+				int index = Files.Count;
+				for (int i = 0; i < Files.Count; i++)
+				{
+					if (Files[i].FileDate > item.FileDate)
+					{
+						index = i;
+						break;
+					}
+				}
+				Files.Insert(index, item);
+				return item;
+			}
+		}
+
 		public FileItem Add (FileItem item)
 		{
 			lock (_locker)

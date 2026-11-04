@@ -1360,7 +1360,7 @@ namespace CameraControl.Core.Classes
 						if (session.SupportedExtensions.Contains(Path.GetExtension(file).ToLower()))
 						{
 							if (!string.IsNullOrEmpty(file) && !session.ContainFile(file))
-								session.AddFile(file);
+								session.AddFileInDateOrder(file);
 						}
 					}
 				}
