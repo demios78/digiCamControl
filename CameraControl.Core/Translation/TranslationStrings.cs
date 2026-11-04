@@ -528,6 +528,13 @@ namespace CameraControl.Core.Translation
 		public static string LabelOnionSkinShow = "Show previous photos";
 		public static string LabelOnionSkinTransparency = "Transparency";
 		public static string LabelOnionSkinPhotos = "Photos";
+		public static string LabelAspectMask = "Aspect ratio mask";
+		public static string LabelAspectMaskShow = "Show mask";
+		public static string LabelAspectMaskRatio = "Aspect ratio";
+		public static string LabelAspectMaskTransparency = "Transparency";
+		public static string LabelAspectMaskThirds = "Rule of thirds";
+		public static string LabelAspectMaskCenterDot = "Center dot";
+		public static string LabelAspectMaskGuides = "Guides";
 		public static string LabelMinimizeToTryIcon = "Minimize to tray icon";
 		public static string LabelStartMinimized = "Start minimized";
 		public static string LabelStartupWithWindows = "Start when Windows starts";

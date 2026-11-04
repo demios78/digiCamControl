@@ -294,6 +294,21 @@ namespace CameraControl
 						ServiceProvider.Settings.OnionSkinFrames % CameraControl.Core.Classes.Settings.OnionSkinMaxFrames + 1;
 				}
 
+				if (cmd == WindowsCmdConsts.AspectMask_Toggle && ServiceProvider.Settings != null)
+				{
+					ServiceProvider.Settings.AspectMaskEnabled = !ServiceProvider.Settings.AspectMaskEnabled;
+				}
+
+				if (cmd == WindowsCmdConsts.AspectMask_CycleGuides && ServiceProvider.Settings != null)
+				{
+					// none -> rule of thirds -> center dot -> both -> none
+					int state = (ServiceProvider.Settings.AspectMaskThirds ? 1 : 0) +
+								(ServiceProvider.Settings.AspectMaskCenterDot ? 2 : 0);
+					state = (state + 1) % 4;
+					ServiceProvider.Settings.AspectMaskThirds = (state & 1) != 0;
+					ServiceProvider.Settings.AspectMaskCenterDot = (state & 2) != 0;
+				}
+
 				if (cmd == CmdConsts.All_Close)
 				{
 					ServiceProvider.WindowsManager.Event -= WindowsManager_Event;

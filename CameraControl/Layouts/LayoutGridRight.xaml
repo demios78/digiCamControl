@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:CameraControl.Controls"
              xmlns:Core="clr-namespace:CameraControl.Core;assembly=CameraControl.Core"
              xmlns:Layouts="clr-namespace:CameraControl.Layouts"
+             xmlns:dccControls="clr-namespace:CameraControl.Controls"
                     xmlns:viewModel="clr-namespace:CameraControl.ViewModel"
                     xmlns:translation="clr-namespace:CameraControl.Core.Translation;assembly=CameraControl.Core"
                     xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
@@ -69,6 +70,15 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <!-- aspect ratio mask, rule of thirds and center dot -->
+                    <dccControls:AspectRatioMaskOverlay HorizontalAlignment="Center" Margin="15"
+                                  Width="{Binding ElementName=Image, Path=Width}" Height="{Binding ElementName=Image, Path=Height}"
+                                  Visibility="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}, Path=AspectMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                  Ratio="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}, Path=AspectMaskRatio}"
+                                  Transparency="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}, Path=AspectMaskTransparency}"
+                                  ShowThirds="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}, Path=AspectMaskThirds}"
+                                  ShowCenterDot="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}, Path=AspectMaskCenterDot}"
+                                  Scale="{Binding ElementName=zoomAndPanControl, Path=ViewportZoom}" />
                     </Grid>
                 </zoomandpan:ZoomAndPanControl>
             </Grid>

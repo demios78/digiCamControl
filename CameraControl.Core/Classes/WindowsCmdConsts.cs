@@ -126,5 +126,7 @@ namespace CameraControl.Core.Classes
 		public const string Restore = "Restore";
 		public const string OnionSkin_Toggle = "OnionSkin_Toggle";
 		public const string OnionSkin_CyclePhotos = "OnionSkin_CyclePhotos";
+		public const string AspectMask_Toggle = "AspectMask_Toggle";
+		public const string AspectMask_CycleGuides = "AspectMask_CycleGuides";
 	}
 }
