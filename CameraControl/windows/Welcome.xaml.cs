@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using CameraControl.Core;
 using CameraControl.Core.Classes;
 
@@ -20,9 +21,18 @@ namespace CameraControl.windows
     /// </summary>
     public partial class Welcome 
     {
+        private static readonly TimeSpan AutoCloseDelay = TimeSpan.FromSeconds(5);
+        private readonly DispatcherTimer _autoCloseTimer;
+
         public Welcome()
         {
             InitializeComponent();
+            // The welcome screen is shown after the application finished loading; close it automatically
+            // so it does not block the main window until the user dismisses it.
+            _autoCloseTimer = new DispatcherTimer { Interval = AutoCloseDelay };
+            _autoCloseTimer.Tick += (sender, args) => Close();
+            Loaded += (sender, args) => _autoCloseTimer.Start();
+            Closed += (sender, args) => _autoCloseTimer.Stop();
         }
 
         private void btn_facebook_Click(object sender, RoutedEventArgs e)
