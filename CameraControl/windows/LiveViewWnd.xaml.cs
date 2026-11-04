@@ -320,6 +320,9 @@ namespace CameraControl.windows
 
         private void MetroWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // don't trigger single-key shortcuts (like I for the aspect ratio mask) while typing in a text field
+            if (Keyboard.FocusedElement is System.Windows.Controls.Primitives.TextBoxBase)
+                return;
             if ((DateTime.Now - _focusMoveTime).TotalMilliseconds < 200)
                 return;
             _focusMoveTime = DateTime.Now;

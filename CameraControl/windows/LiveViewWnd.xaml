@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                       xmlns:local="clr-namespace:CameraControl.Controls"
+                      xmlns:myClasses="clr-namespace:CameraControl.Classes"
                       xmlns:T="clr-namespace:CameraControl.Core.Translation;assembly=CameraControl.Core"
                       xmlns:Devices="clr-namespace:CameraControl.Devices;assembly=CameraControl.Devices"
                       xmlns:Classes="clr-namespace:CameraControl.Core.Classes;assembly=CameraControl.Core"
@@ -193,6 +194,19 @@
                     </ContentControl>
                 </Canvas>
             </Viewbox>
+        </Grid>
+
+        <!-- aspect ratio mask, rule of thirds and center dot (same settings and shortcuts as the main window) -->
+        <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="4" IsHitTestVisible="False"
+              Visibility="{Binding Source={x:Static Core:ServiceProvider.Settings}, Path=AspectMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter1}}">
+            <Grid.LayoutTransform>
+                <RotateTransform  Angle="{Binding Rotation}" />
+            </Grid.LayoutTransform>
+            <local:AspectRatioMaskOverlay Width="{Binding ActualWidth, ElementName=_image}" Height="{Binding ActualHeight, ElementName=_image}"
+                Ratio="{Binding Source={x:Static Core:ServiceProvider.Settings}, Path=AspectMaskRatio}"
+                Transparency="{Binding Source={x:Static Core:ServiceProvider.Settings}, Path=AspectMaskTransparency}"
+                ShowThirds="{Binding Source={x:Static Core:ServiceProvider.Settings}, Path=AspectMaskThirds}"
+                ShowCenterDot="{Binding Source={x:Static Core:ServiceProvider.Settings}, Path=AspectMaskCenterDot}" />
         </Grid>
 
         <StackPanel Grid.Column="2" Background="#35000000" Grid.Row="0" Grid.RowSpan="4" Margin="5" Orientation="Horizontal" Visibility="{Binding Recording, Converter={StaticResource BooleanToVisibilityConverter1}}" VerticalAlignment="Top" HorizontalAlignment="Right">
@@ -501,6 +515,43 @@
                                 <Button Grid.Column="2" Grid.Row="1" Width="40" Height="40" Style="{StaticResource MaterialDesignFloatingActionLightButton}" ToolTip="{T:Translate LabelReset}" Command="{Binding ResetOverlayCommand}" Margin="4">
                                     <materialDesign:PackIcon Kind="RedoVariant" Height="35" Width="35" />
                                 </Button>
+                            </Grid>
+                        </Expander>
+                    </materialDesign:Card>
+                    <materialDesign:Card Margin="4">
+                        <Expander Header="{T:Translate LabelAspectMask}">
+                            <Grid Margin="4" DataContext="{Binding Source={x:Static Core:ServiceProvider.Settings}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <CheckBox Grid.Row="0" Grid.Column="0" Margin="2" Content="{T:Translate LabelAspectMaskShow}" IsChecked="{Binding AspectMaskEnabled}" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Margin="2" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           Text="{myClasses:CommandShortcutExtensioncs AspectMask_Toggle}" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Margin="2,6,2,2" VerticalAlignment="Center" Text="{T:Translate LabelAspectMaskRatio}" />
+                                <ComboBox Grid.Row="1" Grid.Column="1" Margin="2,6,2,2" MinWidth="80"
+                                          ItemsSource="{x:Static Classes:Settings.AspectMaskRatios}" SelectedItem="{Binding AspectMaskRatio}" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Margin="2,6,2,0" Text="{T:Translate LabelAspectMaskTransparency}" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Margin="2,6,2,0" Text="{Binding AspectMaskTransparency, StringFormat={}{0} %}" />
+                                <Slider Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Minimum="0" Maximum="100" SmallChange="1" LargeChange="10"
+                                        TickFrequency="10" TickPlacement="BottomRight" Value="{Binding AspectMaskTransparency}" />
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Margin="2,6,2,0" Text="{T:Translate LabelAspectMaskGuides}" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" Margin="2,6,2,0" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           Text="{myClasses:CommandShortcutExtensioncs AspectMask_CycleGuides}" />
+                                <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Content="{T:Translate LabelAspectMaskThirds}" IsChecked="{Binding AspectMaskThirds}" />
+                                <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="2" Content="{T:Translate LabelAspectMaskCenterDot}" IsChecked="{Binding AspectMaskCenterDot}" />
                             </Grid>
                         </Expander>
                     </materialDesign:Card>
