@@ -833,6 +833,51 @@ namespace CameraControl.Core.Classes
 		private string _fullScreenPassword;
 		private string _currentThemeNameNew;
 		private bool _webcamSupport;
+		private bool _onionSkinEnabled;
+		private int _onionSkinTransparency;
+		private int _onionSkinFrames;
+
+		public const int OnionSkinMaxFrames = 4;
+
+		/// <summary>
+		/// Show the previous photos of the session as semi-transparent layers over the main image
+		/// </summary>
+		public bool OnionSkinEnabled
+		{
+			get { return _onionSkinEnabled; }
+			set
+			{
+				_onionSkinEnabled = value;
+				NotifyPropertyChanged("OnionSkinEnabled");
+			}
+		}
+
+		/// <summary>
+		/// How much less visible each onion skin layer is than the photo after it, in percent
+		/// (0 = all photos equally visible, 100 = previous photos invisible)
+		/// </summary>
+		public int OnionSkinTransparency
+		{
+			get { return _onionSkinTransparency; }
+			set
+			{
+				_onionSkinTransparency = Math.Max(0, Math.Min(100, value));
+				NotifyPropertyChanged("OnionSkinTransparency");
+			}
+		}
+
+		/// <summary>
+		/// Number of previous photos shown as onion skin layers (1 - 4)
+		/// </summary>
+		public int OnionSkinFrames
+		{
+			get { return _onionSkinFrames; }
+			set
+			{
+				_onionSkinFrames = Math.Max(1, Math.Min(OnionSkinMaxFrames, value));
+				NotifyPropertyChanged("OnionSkinFrames");
+			}
+		}
 
 		[XmlIgnore]
 		[JsonIgnore]
@@ -1098,6 +1143,9 @@ namespace CameraControl.Core.Classes
 		public void ResetSettings ()
 		{
 			Actions = new AsyncObservableCollection<WindowCommandItem>();
+			OnionSkinEnabled = false;
+			OnionSkinTransparency = 50;
+			OnionSkinFrames = 1;
 			DisableNativeDrivers = false;
 			AutoPreview = true;
 			LastUpdateCheckDate = DateTime.MinValue;

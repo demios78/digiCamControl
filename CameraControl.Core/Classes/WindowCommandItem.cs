@@ -63,6 +63,12 @@ namespace CameraControl.Core.Classes
 
         public bool Ctrl { get; set; }
 
+        /// <summary>
+        /// The shortcut requires the Shift key. Shortcuts without Shift also fire when Shift is held,
+        /// unless a Shift shortcut is assigned to the same key.
+        /// </summary>
+        public bool Shift { get; set; }
+
         public bool Global { get; set; }
 
         public WindowCommandItem()

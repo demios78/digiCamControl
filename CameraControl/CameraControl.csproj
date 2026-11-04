@@ -273,6 +273,7 @@
     <Compile Include="ViewModel\LayoutViewModel.cs" />
     <Compile Include="ViewModel\LiveViewVideoSource.cs" />
     <Compile Include="ViewModel\LiveViewViewModel.cs" />
+    <Compile Include="ViewModel\OnionSkinViewModel.cs" />
     <Compile Include="ViewModel\MainMenuViewModel.cs" />
     <Compile Include="ViewModel\MJpegServer.cs" />
     <Compile Include="ViewModel\MultipleLiveViewViewModel.cs" />

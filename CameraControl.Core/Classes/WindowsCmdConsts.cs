@@ -124,5 +124,7 @@ namespace CameraControl.Core.Classes
 		public const string ViewExplorer = "ViewExplorer";
 		public const string RefreshDisplay = "RefreshDisplay";
 		public const string Restore = "Restore";
+		public const string OnionSkin_Toggle = "OnionSkin_Toggle";
+		public const string OnionSkin_CyclePhotos = "OnionSkin_CyclePhotos";
 	}
 }

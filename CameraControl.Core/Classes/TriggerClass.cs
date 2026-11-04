@@ -122,12 +122,16 @@ namespace CameraControl.Core.Classes
             try
             {
                 Key inputKey = KeyInterop.KeyFromVirtualKey((int)e.Key);
-                foreach (var item in ServiceProvider.Settings.Actions)
+                var matches = ServiceProvider.Settings.Actions
+                    .Where(item => item.Global && item.Alt == e.isAltPressed && item.Ctrl == e.isCtrlPressed &&
+                                   item.KeyEnum == inputKey && (!item.Shift || e.isShiftPressed))
+                    .ToList();
+                // a shortcut defined with Shift takes precedence over the same key without Shift
+                if (e.isShiftPressed && matches.Any(item => item.Shift))
+                    matches = matches.Where(item => item.Shift).ToList();
+                foreach (var item in matches)
                 {
-                    if (!item.Global)
-                        continue;
-                    if (item.Alt == e.isAltPressed && item.Ctrl == e.isCtrlPressed && item.KeyEnum == inputKey)
-                        ServiceProvider.WindowsManager.ExecuteCommand(item.Name);
+                    ServiceProvider.WindowsManager.ExecuteCommand(item.Name);
                 }
                 ICameraDevice lastDevice = null;
                 foreach (ICameraDevice device in ServiceProvider.DeviceManager.ConnectedDevices)
@@ -176,13 +180,19 @@ namespace CameraControl.Core.Classes
 
         public static void KeyDown(KeyEventArgs e)
         {
-            foreach (var item in ServiceProvider.Settings.Actions)
+            bool shiftPressed = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            var matches = ServiceProvider.Settings.Actions
+                .Where(item => item.KeyEnum == e.Key && item.Alt == _altPressed && item.Ctrl == _ctrlPressed &&
+                               (!item.Shift || shiftPressed))
+                .ToList();
+            // a shortcut defined with Shift takes precedence over the same key without Shift
+            if (shiftPressed && matches.Any(item => item.Shift))
+                matches = matches.Where(item => item.Shift).ToList();
+
+            foreach (var item in matches)
             {
-                if (item.KeyEnum == e.Key && item.Alt == _altPressed && item.Ctrl == _ctrlPressed)
-                {
-                    ServiceProvider.WindowsManager.ExecuteCommand(item.Name);
-                    e.Handled = true;
-                }
+                ServiceProvider.WindowsManager.ExecuteCommand(item.Name);
+                e.Handled = true;
             }
 
         }

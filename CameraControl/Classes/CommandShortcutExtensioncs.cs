@@ -32,7 +32,7 @@ namespace CameraControl.Classes
 			foreach (var act in ServiceProvider.Settings.Actions)
 			{
 				if (act.Name == Key)
-					return (act.Ctrl ? "CTRL + " : "") + (act.Alt ? "ALT + " : "") + (act.Key == "None" ? "" : act.Key);
+					return (act.Ctrl ? "CTRL + " : "") + (act.Alt ? "ALT + " : "") + (act.Shift ? "SHIFT + " : "") + (act.Key == "None" ? "" : act.Key);
 			}
 
 			return "";

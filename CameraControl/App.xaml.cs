@@ -282,6 +282,18 @@ namespace CameraControl
 					cmd != WindowsCmdConsts.Select_Image && !cmd.StartsWith("Zoom"))
 					ServiceProvider.Analytics.Command(cmd, o as string);
 
+				if (cmd == WindowsCmdConsts.OnionSkin_Toggle && ServiceProvider.Settings != null)
+				{
+					ServiceProvider.Settings.OnionSkinEnabled = !ServiceProvider.Settings.OnionSkinEnabled;
+				}
+
+				if (cmd == WindowsCmdConsts.OnionSkin_CyclePhotos && ServiceProvider.Settings != null)
+				{
+					// 1 -> 2 -> 3 -> 4 -> 1
+					ServiceProvider.Settings.OnionSkinFrames =
+						ServiceProvider.Settings.OnionSkinFrames % CameraControl.Core.Classes.Settings.OnionSkinMaxFrames + 1;
+				}
+
 				if (cmd == CmdConsts.All_Close)
 				{
 					ServiceProvider.WindowsManager.Event -= WindowsManager_Event;

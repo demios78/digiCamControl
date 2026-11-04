@@ -41,6 +41,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using CameraControl.Classes;
 using CameraControl.Core;
 using CameraControl.Core.Classes;
@@ -69,11 +70,17 @@ namespace CameraControl.Layouts
         public ListBox ImageLIst { get; set; }
         private readonly BackgroundWorker _worker = new BackgroundWorker();
         private FileItem _selectedItem = null;
+        private DependencyPropertyDescriptor _itemsSourceDescriptor;
         public ZoomAndPanControl ZoomAndPanControl { get; set; }
         public UIElement content { get; set; }
         public MediaElement MediaElement { get; set; }
 
         public LayoutViewModel LayoutViewModel { get; set; }
+
+        /// <summary>
+        /// Onion skin layers drawn over the main image, only available in layouts which show a main image
+        /// </summary>
+        public OnionSkinViewModel OnionSkin { get; private set; }
 
         public LayoutBase()
         {
@@ -95,6 +102,8 @@ namespace CameraControl.Layouts
             ServiceProvider.Settings.PropertyChanged -= Settings_PropertyChanged;
             ServiceProvider.WindowsManager.Event -= Trigger_Event;
             ImageLIst.SelectionChanged -= ImageLIst_SelectionChanged;
+            StopWaitingForItems();
+            OnionSkin?.Dispose();
         }
 
 
@@ -181,6 +190,11 @@ namespace CameraControl.Layouts
 
         public void InitServices()
         {
+            if (ZoomAndPanControl != null)
+            {
+                OnionSkin = new OnionSkinViewModel();
+                OnionSkin.ScheduleUpdate();
+            }
             ServiceProvider.Settings.PropertyChanged += Settings_PropertyChanged;
             ServiceProvider.WindowsManager.Event += Trigger_Event;
             ImageLIst.SelectionChanged += ImageLIst_SelectionChanged;
@@ -192,8 +206,8 @@ namespace CameraControl.Layouts
             }
             else
             {
-                if (ServiceProvider.Settings.DefaultSession.Files.Count > 0)
-                    ImageLIst.SelectedIndex = 0;
+                // nothing selected yet (application start): show the last photo taken
+                SelectLastFileWhenLoaded();
             }
             if (ZoomAndPanControl != null)
             {
@@ -201,6 +215,44 @@ namespace CameraControl.Layouts
                 ZoomAndPanControl.ContentOffsetXChanged += ZoomAndPanControl_ContentScaleChanged;
                 ZoomAndPanControl.ContentOffsetYChanged += ZoomAndPanControl_ContentScaleChanged;
             }
+        }
+
+        /// <summary>
+        /// Selects the last photo of the session. The image list is bound asynchronously, so if it is
+        /// not populated yet the selection is made as soon as the items arrive.
+        /// </summary>
+        private void SelectLastFileWhenLoaded()
+        {
+            if (TrySelectLastFile())
+                return;
+            _itemsSourceDescriptor = DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ListBox));
+            _itemsSourceDescriptor.AddValueChanged(ImageLIst, ImageLIst_ItemsSourceChanged);
+        }
+
+        private void ImageLIst_ItemsSourceChanged(object sender, EventArgs e)
+        {
+            // wait until the list processed the new items (and its default selection) before selecting
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (TrySelectLastFile())
+                    StopWaitingForItems();
+            }), DispatcherPriority.Background);
+        }
+
+        private bool TrySelectLastFile()
+        {
+            FileItem last = ImageLIst.Items.OfType<FileItem>().LastOrDefault(item => item.Visible);
+            if (last == null)
+                return false;
+            ImageLIst.SelectedItem = last;
+            ImageLIst.ScrollIntoView(last);
+            return true;
+        }
+
+        private void StopWaitingForItems()
+        {
+            _itemsSourceDescriptor?.RemoveValueChanged(ImageLIst, ImageLIst_ItemsSourceChanged);
+            _itemsSourceDescriptor = null;
         }
 
         private void ZoomAndPanControl_ContentScaleChanged(object sender, EventArgs e)
@@ -350,6 +402,7 @@ namespace CameraControl.Layouts
             GeneratePreview();
             LayoutViewModel.DoZoom();
             ServiceProvider.Settings.SelectedBitmap.Notify();
+            OnionSkin?.ScheduleUpdate();
         }
 
         public void LoadFullRes()
