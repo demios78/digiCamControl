@@ -13,6 +13,7 @@
          
         xmlns:local="clr-namespace:CameraControl.Controls"
                        xmlns:Core="clr-namespace:CameraControl.Core;assembly=CameraControl.Core"
+        xmlns:CoreClasses="clr-namespace:CameraControl.Core.Classes;assembly=CameraControl.Core"
                        xmlns:myClasess="clr-namespace:CameraControl.Classes"
                        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                        xmlns:T="clr-namespace:CameraControl.Core.Translation;assembly=CameraControl.Core"
@@ -365,6 +366,46 @@
                                         <TextBlock Grid.Row="3" Grid.Column="1" Margin="4,8,4,0" Text="{Binding OnionSkinFrames}" />
                                         <Slider Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="4" Minimum="1" Maximum="4" SmallChange="1" LargeChange="1"
                                                 TickFrequency="1" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Value="{Binding OnionSkinFrames}" IsEnabled="{Binding OnionSkinEnabled}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Expander>
+                        </materialDesign:Card>
+                        <materialDesign:Card Margin="4">
+                            <Expander Header="{T:TranslateExtension LabelAspectMask}" VerticalAlignment="Top" IsExpanded="False" Margin="0" Padding="0">
+                                <StackPanel Orientation="Vertical">
+                                    <Border Background="{DynamicResource MaterialDesignDivider}" Height="1" HorizontalAlignment="Stretch" SnapsToDevicePixels="True" />
+                                    <Grid Margin="24,8,24,16" DataContext="{Binding Source={x:Static Member=Core:ServiceProvider.Settings}}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Margin="4" Content="{T:TranslateExtension LabelAspectMaskShow}" IsChecked="{Binding AspectMaskEnabled}" />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Margin="4" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                   Text="{myClasess:CommandShortcutExtensioncs AspectMask_Toggle}" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Margin="4,8,4,4" VerticalAlignment="Center" Text="{T:TranslateExtension LabelAspectMaskRatio}" />
+                                        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4,8,4,4" MinWidth="80"
+                                                  ItemsSource="{x:Static CoreClasses:Settings.AspectMaskRatios}" SelectedItem="{Binding AspectMaskRatio}" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Margin="4,8,4,0" Text="{T:TranslateExtension LabelAspectMaskTransparency}" />
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Margin="4,8,4,0" Text="{Binding AspectMaskTransparency, StringFormat={}{0} %}" />
+                                        <Slider Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="4" Minimum="0" Maximum="100" SmallChange="1" LargeChange="10"
+                                                TickFrequency="10" TickPlacement="BottomRight" Value="{Binding AspectMaskTransparency}" />
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Margin="4,8,4,0" Text="{T:TranslateExtension LabelAspectMaskGuides}" />
+                                        <TextBlock Grid.Row="4" Grid.Column="1" Margin="4,8,4,0" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                   Text="{myClasess:CommandShortcutExtensioncs AspectMask_CycleGuides}" />
+                                        <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Margin="4" Content="{T:TranslateExtension LabelAspectMaskThirds}" IsChecked="{Binding AspectMaskThirds}" />
+                                        <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="4" Content="{T:TranslateExtension LabelAspectMaskCenterDot}" IsChecked="{Binding AspectMaskCenterDot}" />
                                     </Grid>
                                 </StackPanel>
                             </Expander>

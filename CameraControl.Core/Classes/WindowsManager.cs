@@ -178,6 +178,13 @@ namespace CameraControl.Core.Classes
 						item.SetKey(Key.O);
 						item.Shift = true;
 						break;
+					case WindowsCmdConsts.AspectMask_Toggle:
+						item.SetKey(Key.I);
+						break;
+					case WindowsCmdConsts.AspectMask_CycleGuides:
+						item.SetKey(Key.I);
+						item.Shift = true;
+						break;
 				}
 			}
 		}

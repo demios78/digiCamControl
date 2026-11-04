@@ -839,6 +839,85 @@ namespace CameraControl.Core.Classes
 
 		public const int OnionSkinMaxFrames = 4;
 
+		private bool _aspectMaskEnabled;
+		private string _aspectMaskRatio;
+		private int _aspectMaskTransparency;
+		private bool _aspectMaskThirds;
+		private bool _aspectMaskCenterDot;
+
+		/// <summary>
+		/// Aspect ratios offered for the aspect ratio mask, "None" shows only the guides
+		/// </summary>
+		public static readonly string[] AspectMaskRatios =
+		{
+			"None", "16:9", "4:3", "3:2", "1:1", "5:4", "4:5", "2:3", "3:4", "9:16", "1.85:1", "2.39:1"
+		};
+
+		/// <summary>
+		/// Show the aspect ratio mask and guides over the main image
+		/// </summary>
+		public bool AspectMaskEnabled
+		{
+			get { return _aspectMaskEnabled; }
+			set
+			{
+				_aspectMaskEnabled = value;
+				NotifyPropertyChanged("AspectMaskEnabled");
+			}
+		}
+
+		/// <summary>
+		/// Selected aspect ratio, one of <see cref="AspectMaskRatios"/>
+		/// </summary>
+		public string AspectMaskRatio
+		{
+			get { return _aspectMaskRatio; }
+			set
+			{
+				_aspectMaskRatio = string.IsNullOrEmpty(value) ? "None" : value;
+				NotifyPropertyChanged("AspectMaskRatio");
+			}
+		}
+
+		/// <summary>
+		/// Transparency of the masked (outside) area and the guides in percent (0 = opaque, 100 = invisible)
+		/// </summary>
+		public int AspectMaskTransparency
+		{
+			get { return _aspectMaskTransparency; }
+			set
+			{
+				_aspectMaskTransparency = Math.Max(0, Math.Min(100, value));
+				NotifyPropertyChanged("AspectMaskTransparency");
+			}
+		}
+
+		/// <summary>
+		/// Show rule of thirds lines inside the mask frame
+		/// </summary>
+		public bool AspectMaskThirds
+		{
+			get { return _aspectMaskThirds; }
+			set
+			{
+				_aspectMaskThirds = value;
+				NotifyPropertyChanged("AspectMaskThirds");
+			}
+		}
+
+		/// <summary>
+		/// Show a small dot at the center of the mask frame
+		/// </summary>
+		public bool AspectMaskCenterDot
+		{
+			get { return _aspectMaskCenterDot; }
+			set
+			{
+				_aspectMaskCenterDot = value;
+				NotifyPropertyChanged("AspectMaskCenterDot");
+			}
+		}
+
 		/// <summary>
 		/// Show the previous photos of the session as semi-transparent layers over the main image
 		/// </summary>
@@ -1146,6 +1225,11 @@ namespace CameraControl.Core.Classes
 			OnionSkinEnabled = false;
 			OnionSkinTransparency = 50;
 			OnionSkinFrames = 1;
+			AspectMaskEnabled = false;
+			AspectMaskRatio = "16:9";
+			AspectMaskTransparency = 50;
+			AspectMaskThirds = false;
+			AspectMaskCenterDot = false;
 			DisableNativeDrivers = false;
 			AutoPreview = true;
 			LastUpdateCheckDate = DateTime.MinValue;
