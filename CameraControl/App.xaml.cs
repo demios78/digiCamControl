@@ -289,9 +289,20 @@ namespace CameraControl
 
 				if (cmd == WindowsCmdConsts.OnionSkin_CyclePhotos && ServiceProvider.Settings != null)
 				{
-					// 1 -> 2 -> 3 -> 4 -> 1
-					ServiceProvider.Settings.OnionSkinFrames =
-						ServiceProvider.Settings.OnionSkinFrames % CameraControl.Core.Classes.Settings.OnionSkinMaxFrames + 1;
+					// off -> 1 -> 2 -> 3 -> 4 -> off
+					if (!ServiceProvider.Settings.OnionSkinEnabled)
+					{
+						ServiceProvider.Settings.OnionSkinFrames = 1;
+						ServiceProvider.Settings.OnionSkinEnabled = true;
+					}
+					else if (ServiceProvider.Settings.OnionSkinFrames >= CameraControl.Core.Classes.Settings.OnionSkinMaxFrames)
+					{
+						ServiceProvider.Settings.OnionSkinEnabled = false;
+					}
+					else
+					{
+						ServiceProvider.Settings.OnionSkinFrames++;
+					}
 				}
 
 				if (cmd == WindowsCmdConsts.AspectMask_Toggle && ServiceProvider.Settings != null)
@@ -301,6 +312,8 @@ namespace CameraControl
 
 				if (cmd == WindowsCmdConsts.AspectMask_CycleGuides && ServiceProvider.Settings != null)
 				{
+					// cycling the guides is only useful when they can be seen
+					ServiceProvider.Settings.AspectMaskEnabled = true;
 					// none -> rule of thirds -> center dot -> both -> none
 					int state = (ServiceProvider.Settings.AspectMaskThirds ? 1 : 0) +
 								(ServiceProvider.Settings.AspectMaskCenterDot ? 2 : 0);
