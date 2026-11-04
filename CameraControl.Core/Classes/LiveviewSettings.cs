@@ -230,6 +230,12 @@ namespace CameraControl.Core.Classes
 
 
         public string SelectedOverlay { get; set; }
+        public bool OverlayActivated { get; set; }
+        public bool OverlayUseLastCaptured { get; set; }
+        public int OverlayTransparency { get; set; }
+        public int OverlayScale { get; set; }
+        public int OverlayHorizontal { get; set; }
+        public int OverlayVertical { get; set; }
         public bool BlackAndWhite { get; set; }
         public bool Invert { get; set; }
         public bool EdgeDetection { get; set; }
@@ -285,6 +291,13 @@ namespace CameraControl.Core.Classes
             SnapshotCaptureCount = 1;
             SnapshotCaptureTime = 500;
             GridColor = Colors.Gray;
+
+            OverlayActivated = false;
+            OverlayUseLastCaptured = false;
+            OverlayTransparency = 100;
+            OverlayScale = 0;
+            OverlayHorizontal = 0;
+            OverlayVertical = 0;
         }
 
 

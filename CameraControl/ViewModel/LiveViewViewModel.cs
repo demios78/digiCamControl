@@ -96,14 +96,8 @@ namespace CameraControl.ViewModel
         private PointCollection _greenColorHistogramPoints;
         private PointCollection _blueColorHistogramPoints;
         private AsyncObservableCollection<ValuePair> _overlays;
-        private bool _overlayActivated;
-        private int _overlayScale;
-        private int _overlayHorizontal;
-        private int _overlayVertical;
         private bool _stayOnTop;
         private int _focusStackingTick;
-        private int _overlayTransparency;
-        private bool _overlayUseLastCaptured;
         private int _captureDelay;
         private int _countDown;
         private bool _countDownVisible;
@@ -360,60 +354,60 @@ namespace CameraControl.ViewModel
 
         public bool OverlayActivated
         {
-            get { return _overlayActivated; }
+            get { return CameraProperty.LiveviewSettings.OverlayActivated; }
             set
             {
-                _overlayActivated = value;
+                CameraProperty.LiveviewSettings.OverlayActivated = value;
                 RaisePropertyChanged(() => OverlayActivated);
             }
         }
 
         public int OverlayScale
         {
-            get { return _overlayScale; }
+            get { return CameraProperty.LiveviewSettings.OverlayScale; }
             set
             {
-                _overlayScale = value;
+                CameraProperty.LiveviewSettings.OverlayScale = value;
                 RaisePropertyChanged(() => OverlayScale);
             }
         }
 
         public int OverlayHorizontal
         {
-            get { return _overlayHorizontal; }
+            get { return CameraProperty.LiveviewSettings.OverlayHorizontal; }
             set
             {
-                _overlayHorizontal = value;
+                CameraProperty.LiveviewSettings.OverlayHorizontal = value;
                 RaisePropertyChanged(() => OverlayHorizontal);
             }
         }
 
         public int OverlayVertical
         {
-            get { return _overlayVertical; }
+            get { return CameraProperty.LiveviewSettings.OverlayVertical; }
             set
             {
-                _overlayVertical = value;
+                CameraProperty.LiveviewSettings.OverlayVertical = value;
                 RaisePropertyChanged(() => OverlayVertical);
             }
         }
 
         public int OverlayTransparency
         {
-            get { return _overlayTransparency; }
+            get { return CameraProperty.LiveviewSettings.OverlayTransparency; }
             set
             {
-                _overlayTransparency = value;
+                CameraProperty.LiveviewSettings.OverlayTransparency = value;
                 RaisePropertyChanged(() => OverlayTransparency);
             }
         }
 
         public bool OverlayUseLastCaptured
         {
-            get { return _overlayUseLastCaptured; }
+            get { return CameraProperty.LiveviewSettings.OverlayUseLastCaptured; }
             set
             {
-                _overlayUseLastCaptured = value;
+                CameraProperty.LiveviewSettings.OverlayUseLastCaptured = value;
                 RaisePropertyChanged(() => OverlayUseLastCaptured);
             }
         }
@@ -1632,8 +1626,6 @@ namespace CameraControl.ViewModel
                     Overlays.Add(new ValuePair {Name = Path.GetFileNameWithoutExtension(file), Value = file});
                 }
             }
-            OverlayTransparency = 100;
-            OverlayUseLastCaptured = false;
         }
 
         private void Init()
@@ -2250,24 +2242,26 @@ namespace CameraControl.ViewModel
             color = GridColor;
             if (OverlayActivated)
             {
-                if ((SelectedOverlay != null && File.Exists(SelectedOverlay)) || OverlayUseLastCaptured)
+                if (OverlayUseLastCaptured)
                 {
-                    if (OverlayUseLastCaptured)
+                    // the overlay settings are persisted, so this can be active before any photo is selected
+                    string largeThumb = ServiceProvider.Settings.SelectedBitmap?.FileItem?.LargeThumb;
+                    if (largeThumb != null && File.Exists(largeThumb) && _lastOverlay != largeThumb)
                     {
-                        if (File.Exists(ServiceProvider.Settings.SelectedBitmap.FileItem.LargeThumb) &&
-                            _lastOverlay != ServiceProvider.Settings.SelectedBitmap.FileItem.LargeThumb)
-                        {
-                            _lastOverlay = ServiceProvider.Settings.SelectedBitmap.FileItem.LargeThumb;
-                            _overlayImage = null;
-                        }
+                        _lastOverlay = largeThumb;
+                        _overlayImage = null;
                     }
+                }
 
+                string overlayFile = OverlayUseLastCaptured ? _lastOverlay : SelectedOverlay;
+                if (!string.IsNullOrEmpty(overlayFile) && File.Exists(overlayFile))
+                {
                     if (_overlayImage == null)
                     {
                         BitmapImage bitmapSource = new BitmapImage();
                         bitmapSource.DecodePixelWidth = writeableBitmap.PixelWidth;
                         bitmapSource.BeginInit();
-                        bitmapSource.UriSource = new Uri(OverlayUseLastCaptured ? _lastOverlay : SelectedOverlay);
+                        bitmapSource.UriSource = new Uri(overlayFile);
                         bitmapSource.EndInit();
                         _overlayImage = BitmapFactory.ConvertToPbgra32Format(bitmapSource);
                         _overlayImage.Freeze();
