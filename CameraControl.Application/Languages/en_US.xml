@@ -70,6 +70,8 @@
     <string name="CapturePhotoNoAfToolTip">Capture photo no auto focus</string> 
     <string name="BraketingToolTip">Bracketing</string> 
     <string name="SettingsToolTip">Settings</string> 
+    <string name="ImportProjectToolTip">Import project</string>
+    <string name="ExportProjectToolTip">Export project</string>
     <string name="TimeLapseToolTip">Time lapse</string> 
     <string name="FullscreenToolTip">Full screen</string> 
     <string name="LiveViewToolTip">Live view</string> 
@@ -131,7 +133,8 @@
     <string name="LabelFullscrenBack">Full screen window background : </string> 
     <string name="LabelTriggers">Triggers</string> 
     <string name="LabelUseKeybordToTrigger">Use keyboard to trigger take photo</string> 
-    <string name="LabelWebserver">Webserver</string> 
+    <string name="LabelWebserverAndPipeServer">Remote control</string> 
+    <string name="LabelUsePipeServer">Use named pipe</string>
     <string name="LabelUseWebserver">Use web server</string> 
     <string name="LabelFocusAndLiveview">Live view</string> 
     <string name="LabelSmallFocusSstep">Small focus step</string> 
@@ -439,6 +442,7 @@
     <string name="LabelSendTheLogFile">Send the log file</string>
     <string name="LabelAskSendLogFile">Do you want to send log file to developers ?</string>
     <string name="LabelSyncCameraDate">Sync camera date time on camera connect</string>
+	<string name="LabelSyncCameraDateUtc">UTC</string>
     <string name="LabelShowThumbUpDown">Show thumb up/down buttons</string>
     <string name="LabelSend">Send</string>
     <string name="LabelLogMessage">Message to the developers of digiCamControl :</string>

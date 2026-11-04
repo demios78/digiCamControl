@@ -281,6 +281,8 @@
     <Compile Include="ViewModel\SimpleLiveViewViewModel.cs" />
     <Compile Include="ViewModel\StatisticsViewModel.cs" />
     <Compile Include="ViewModel\TimelapseViewModel.cs" />
+    <Compile Include="ViewModel\ExternalServicesViewModel.cs" />
+    <Compile Include="ViewModel\UIButtonViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Compile Include="windows\AboutWnd.xaml.cs">
       <DependentUpon>AboutWnd.xaml</DependentUpon>
@@ -306,6 +308,15 @@
     <Compile Include="windows\BulbWnd.xaml.cs">
       <DependentUpon>BulbWnd.xaml</DependentUpon>
     </Compile>
+    <Compile Include="windows\ExportProjectDlg.xaml.cs">
+      <DependentUpon>ExportProjectDlg.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="windows\ImportProjectDlg.xaml.cs">
+      <DependentUpon>ImportProjectDlg.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="windows\UIButtonWnd.xaml.cs">
+      <DependentUpon>UIButtonWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="windows\CameraPropertyWnd.xaml.cs">
       <DependentUpon>CameraPropertyWnd.xaml</DependentUpon>
     </Compile>
@@ -320,6 +331,9 @@
     </Compile>
     <Compile Include="windows\ErrorReportWnd.xaml.cs">
       <DependentUpon>ErrorReportWnd.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="windows\ExternalServicesWnd.xaml.cs">
+      <DependentUpon>ExternalServicesWnd.xaml</DependentUpon>
     </Compile>
     <Compile Include="windows\FileNameTemplateEditorWnd.xaml.cs">
       <DependentUpon>FileNameTemplateEditorWnd.xaml</DependentUpon>
@@ -369,6 +383,15 @@
     </Compile>
     <Compile Include="windows\ScriptWnd.xaml.cs">
       <DependentUpon>ScriptWnd.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="windows\ScriptWndSingleCommand.xaml.cs">
+      <DependentUpon>ScriptWndSingleCommand.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="windows\ScriptWndTclScript.xaml.cs">
+      <DependentUpon>ScriptWndTclScript.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="windows\ScriptWndXmlScript.xaml.cs">
+      <DependentUpon>ScriptWndXmlScript.xaml</DependentUpon>
     </Compile>
     <Compile Include="windows\SelectorWnd.xaml.cs">
       <DependentUpon>SelectorWnd.xaml</DependentUpon>
@@ -522,6 +545,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="windows\ExportProjectDlg.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="windows\ImportProjectDlg.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="windows\UIButtonWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="windows\CameraPropertyWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -539,6 +574,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="windows\ErrorReportWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="windows\ExternalServicesWnd.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -603,6 +642,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="windows\ScriptWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="windows\ScriptWndSingleCommand.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="windows\ScriptWndTclScript.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="windows\ScriptWndXmlScript.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

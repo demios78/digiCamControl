@@ -69,6 +69,8 @@
   <string name="CapturePhotoNoAfToolTip">Foto maken zonder auto focus</string>
   <string name="BraketingToolTip">Belichtings- (Witbalans-, Flits-) reeks</string>
   <string name="SettingsToolTip">Instellingen</string>
+  <string name="ImportProjectToolTip">Importeer project</string>
+  <string name="ExportProjectToolTip">Exporteer project</string>
   <string name="TimeLapseToolTip">Time-Lapse</string>
   <string name="FullscreenToolTip">Volledig scherm</string>
   <string name="LiveViewToolTip">Live beeld</string>
@@ -121,7 +123,8 @@
   <string name="LabelDontLoadThumbs">Geen miniaturen laden</string>
   <string name="LabelTriggers">Triggers</string>
   <string name="LabelUseKeybordToTrigger">Gebruik toetsenbord als trigger bij het maken van foto</string>
-  <string name="LabelWebserver">Webserver</string>
+  <string name="LabelWebserverAndPipeServer">Afstandsbediening</string>
+  <string name="LabelUsePipeServer">Gebruik named pipe</string>
   <string name="LabelUseWebserver">Gebruik webserver</string>
   <string name="LabelFocusAndLiveview">Scherpstellen en live beeld</string>
   <string name="LabelSmallFocusSstep">Kleine scherpstel stap</string>

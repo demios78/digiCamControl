@@ -125,7 +125,7 @@ une capture en plein écran</string>
   <string name="LabelFullscrenBack">Arrière plan en plein écran</string>
   <string name="LabelTriggers">Déclencheur</string>
   <string name="LabelUseKeybordToTrigger">Utiliser le clavier pour déclencher</string>
-  <string name="LabelWebserver">Serveur Web</string>
+  <string name="LabelWebserverAndPipeServer">Télécommande</string>
   <string name="LabelUseWebserver">Utiliser un serveur Web</string>
   <string name="LabelFocusAndLiveview">Mise au point Live View</string>
   <string name="LabelSmallFocusSstep">Petit incrément de mise au point</string>
@@ -385,6 +385,7 @@ Souhaitez-vous continuer?
   <string name="LabelSendTheLogFile">Envoyer le fichier journal</string>
   <string name="LabelAskSendLogFile">Voulez-vous envoyer le fichier journal aux développeurs ?</string>
   <string name="LabelSyncCameraDate">Synchroniser la date et l\'heure lors de la connexion de l\'appareil photo</string>
+  <string name="LabelSyncCameraDateUtc">UTC</string>
   <string name="LabelShowThumbUpDown">Bouton Haut/Bas des vignettes</string>
   <string name="LabelSend">Envoyer</string>
   <string name="LabelLogMessage">Message aux développeurs de digiCamControl</string>

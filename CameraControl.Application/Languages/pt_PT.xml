@@ -124,7 +124,7 @@
   <string name="LabelFullscrenBack">Fundo da janela em ecrã total</string>
   <string name="LabelTriggers">Despoletadores</string>
   <string name="LabelUseKeybordToTrigger">Usar o teclado para despotelar a captura de foto</string>
-  <string name="LabelWebserver">Servidor web</string>
+  <string name="LabelWebserverAndPipeServer">Controle remoto</string>
   <string name="LabelUseWebserver">Usar servidor web</string>
   <string name="LabelFocusAndLiveview">Visualização direta</string>
   <string name="LabelSmallFocusSstep">Passo pequeno de focagem</string>
@@ -374,6 +374,7 @@ Quer continuar?</string>
   <string name="LabelSendTheLogFile">Enviar o ficheiro de relatório</string>
   <string name="LabelAskSendLogFile">Quer enviar o ficheiro de relatório de erros aos programadores?</string>
   <string name="LabelSyncCameraDate">Sincronizar data/hora da câmara ao conetar a câmara</string>
+  <string name="LabelSyncCameraDateUtc">UTC</string>
   <string name="LabelShowThumbUpDown">Mostrar botões Gosto/Não Gosto</string>
   <string name="LabelSend">Enviar</string>
   <string name="LabelLogMessage">Mensagem para os programadores do digiCamControl</string>

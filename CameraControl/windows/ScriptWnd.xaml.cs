@@ -25,562 +25,563 @@
 // THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #endregion
-
 #region
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-using CameraControl.Controls;
 using CameraControl.Core;
 using CameraControl.Core.Classes;
 using CameraControl.Core.Interfaces;
-using CameraControl.Core.Scripting;
-using CameraControl.Core.TclScripting;
-using CameraControl.Core.Wpf;
-using CameraControl.Devices;
-using ICSharpCode.AvalonEdit.CodeCompletion;
-using Microsoft.Win32;
-using MessageBox = System.Windows.Forms.MessageBox;
-
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
 #endregion
 
 namespace CameraControl.windows
 {
-    /// <summary>
-    /// Interaction logic for ScriptWnd.xaml
-    /// </summary>
-    public partial class ScriptWnd : IWindow, IToolPlugin
-    {
-        private readonly TclScriptManager _manager = new TclScriptManager();
+	/// <summary>
+	/// Interaction logic for ScriptWnd.xaml
+	/// </summary>
+	public partial class ScriptWnd : IWindow, IToolPlugin, INotifyPropertyChanged
+	{
 
-        public string Id
-        {
-            get { return "{04F1DD8E-3E4E-497D-80A9-125ABC76DA7E}"; }
-        }
+		public string Id
+		{
+			get { return "{04F1DD8E-3E4E-497D-80A9-125ABC76DA7E}"; }
+		}
 
-        public void Init()
-        {
-            
-        }
+		public void Init ()
+		{
 
-        public string ScriptFileName { get; set; }
+		}
 
-        public ScriptWnd()
-        {
-            InitializeComponent();
-            textEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
-            textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
-            NewScript();
-        }
+		public ScriptWnd ()
+		{
+			DataContext = this;
+			InitializeComponent();
+			_ = new ScriptViewModel(this, mnu_singlecommand, tab_singlecommand, ctrl_singlecommand, null);
+			_ = new ScriptViewModel(this, mnu_xmlscript, tab_xmlscript, ctrl_xmlscript, null);
+		}
 
-        private CompletionWindow completionWindow;
+		#region Implementation of IWindow
 
-        private void textEditor_TextArea_TextEntered(object sender, TextCompositionEventArgs e)
-        {
-            if (e.Text == "<")
-            {
-                // open code completion after the user has pressed dot:
-                completionWindow = new CompletionWindow(textEditor.TextArea);
-                completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                // provide AvalonEdit with the data:
-                IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-                foreach (IScriptCommand command in ServiceProvider.ScriptManager.AvaiableCommands)
-                {
-                    data.Add(new MyCompletionData(command.DefaultValue, command.Description, command.Name.ToLower()));
-                }
-                completionWindow.Show();
-                completionWindow.Closed += delegate { completionWindow = null; };
-            }
-            if (e.Text == ".")
-            {
-                string word = textEditor.GetWordBeforeDot();
-                if (word == "{session" || word == "session")
-                {
-                    IList<PropertyInfo> props = new List<PropertyInfo>(typeof (PhotoSession).GetProperties());
-                    completionWindow = new CompletionWindow(textEditor.TextArea);
-                    completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                    // provide AvalonEdit with the data:
-                    IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-                    foreach (PropertyInfo prop in props)
-                    {
-                        //object propValue = prop.GetValue(myObject, null);
-                        if (prop.PropertyType == typeof (string) || prop.PropertyType == typeof (int) ||
-                            prop.PropertyType == typeof (bool))
-                        {
-                            data.Add(new MyCompletionData(prop.Name.ToLower(), "", prop.Name.ToLower()));
-                        }
-                        // Do something with propValue
-                    }
-                    completionWindow.Show();
-                    completionWindow.Closed += delegate { completionWindow = null; };
-                }
-                if (word == "{camera" && ServiceProvider.DeviceManager.SelectedCameraDevice != null)
-                {
-                    completionWindow = new CompletionWindow(textEditor.TextArea);
-                    completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                    IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+		public void ExecuteCommand (string cmd, object param)
+		{
+			switch (cmd)
+			{
+				case WindowsCmdConsts.ScriptWnd_Show:
+				case WindowsCmdConsts.ScriptWnd_ShowTclScript:
+					{
+						var script = param as DCCProject.TclScript;
+						Dispatcher.Invoke(new Action(delegate
+						{
+							Owner = ServiceProvider.PluginManager.SelectedWindow as Window;
+							Show();
+							Activate();
+							Focus();
+							if (script != null)
+							{
+								var tclScript = (from s in _scripts
+												 where s.TclScript == script
+												 select s).FirstOrDefault();
+								if (tclScript != null)
+								{
+									Dispatcher.Invoke(new Action(delegate
+									{
+										mnu_select_script(tclScript);
+									}));
+								}
+							}
+						}));
+						break;
+					}
+				case WindowsCmdConsts.ScriptWnd_Hide:
+					Hide();
+					break;
+				case CmdConsts.All_Close:
+					Dispatcher.Invoke(new Action(delegate
+					{
+						Hide();
+						foreach (var script in _scripts)
+						{
+							script.Control?.Dispose();
+						}
+						_scripts.Clear();
+						Close();
+					}));
+					break;
+				case WindowsCmdConsts.ScriptWnd_VerifyTclScriptsPresent:
+					Dispatcher.Invoke(new Action(delegate
+					{
+						VerifyTclScripts();
+					}));
+					break;
+				case WindowsCmdConsts.ScriptWnd_CloseAllTclScripts:
+					{
+						List<ScriptViewModel> tclScripts;
+						lock (_scripts)
+						{
+							tclScripts = (from s in _scripts
+										  where s.TclScript != null
+										  select s).ToList();
+						}
+						if (tclScripts.Count > 0)
+						{
+							Dispatcher.Invoke(new Action(delegate
+							{
+								foreach (var script in tclScripts)
+								{
+									script.Close();
+								}
+							}));
+						}
+						break;
+					}
+			}
+		}
+		#endregion
 
-                    CameraPreset preset = new CameraPreset();
-                    preset.Get(ServiceProvider.DeviceManager.SelectedCameraDevice);
-                    foreach (ValuePair value in preset.Values)
-                    {
-                        data.Add(new MyCompletionData(value.Name.Replace(" ", "").ToLower(),
-                            "Current value :" + value.Value,
-                            value.Name.Replace(" ", "").ToLower()));
-                    }
-                    completionWindow.Show();
-                    completionWindow.Closed += delegate { completionWindow = null; };
-                }
-            }
-            if (e.Text == " ")
-            {
-                string line = textEditor.GetLine();
+		private void MetroWindow_Closing (object sender, CancelEventArgs e)
+		{
+			if (IsVisible)
+			{
+				e.Cancel = true;
+				ServiceProvider.WindowsManager.ExecuteCommand(WindowsCmdConsts.ScriptWnd_Hide);
+			}
+		}
 
-                if (line.StartsWith("setcamera"))
-                {
-                    if (!line.Contains("property") && !line.Contains("value"))
-                    {
-                        completionWindow = new CompletionWindow(textEditor.TextArea);
-                        completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                        IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-                        data.Add(new MyCompletionData("property", "", "property"));
-                        completionWindow.Show();
-                        completionWindow.Closed += delegate { completionWindow = null; };
-                    }
-                    if (line.Contains("property") && !line.Contains("value"))
-                    {
-                        completionWindow = new CompletionWindow(textEditor.TextArea);
-                        completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                        IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-                        data.Add(new MyCompletionData("value", "", "value"));
-                        completionWindow.Show();
-                        completionWindow.Closed += delegate { completionWindow = null; };
-                    }
-                }
-            }
+		#region Implementation of IToolPlugin
+
+		public bool Execute ()
+		{
+			ServiceProvider.WindowsManager.ExecuteCommand(WindowsCmdConsts.ScriptWnd_Show);
+			return true;
+		}
+
+		#endregion
+
+		#region Implementation of INotifyPropertyChanged
+		public event PropertyChangedEventHandler PropertyChanged;
+		public virtual void NotifyPropertyChanged (string info)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(info));
+		}
+		#endregion
+
+		private int _numRunning;
+		public string WindowTitle
+		{
+			get
+			{
+				var result = "Script execution";
+				if (_numRunning > 0)
+				{
+					result += $" ({_numRunning} running)";
+				}
+				return result;
+			}
+		}
+
+		private List<ScriptViewModel> _scripts = new List<ScriptViewModel>();
+		private ScriptViewModel _selectedScript;
+
+		public bool ScriptCanClose
+			=> (_selectedScript?.SupportsMultiple ?? false) && ScriptIsNotRunning;
+		public bool ScriptSupportsFile
+			=> _selectedScript?.SupportsFile ?? false;
+		public bool ScriptCanVerify
+			=> (_selectedScript?.SupportsVerify ?? false) && ScriptIsNotRunning;
+		public bool ScriptIsNotRunning
+			=> _selectedScript?.IsNotRunning ?? false;
+		public bool ScriptIsRunning
+			=> _selectedScript?.IsRunning ?? false;
+		public bool AnyScriptIsRunning
+			=> _numRunning > 0;
+
+		private void mnu_select_script (ScriptViewModel script)
+		{
+			if (script == null)
+			{
+				script = (tabs.SelectedItem as TabItem)?.Tag as ScriptViewModel;
+				if (script == null)
+				{
+					lock (_scripts)
+					{
+						script = (from s in _scripts
+								  where s.IsRunning
+								  select s).FirstOrDefault()
+							  ?? (from s in _scripts
+								  where s.TclScript != null
+								  select s).FirstOrDefault();
+					}
+				}
+			}
+			if (_selectedScript != script)
+			{
+				if (_selectedScript != null)
+				{
+					_selectedScript.Menu.IsChecked = false;
+				}
+				_selectedScript = script;
+				if (_selectedScript != null)
+				{
+					_selectedScript.Menu.IsChecked = true;
+					_selectedScript.Tab.IsSelected = true;
+				}
+
+				NotifyPropertyChanged(nameof(ScriptCanClose));
+				NotifyPropertyChanged(nameof(ScriptSupportsFile));
+				NotifyPropertyChanged(nameof(ScriptCanVerify));
+				NotifyPropertyChanged(nameof(ScriptIsNotRunning));
+				NotifyPropertyChanged(nameof(ScriptIsRunning));
+			}
+		}
+
+		private void script_StateChanged (ScriptViewModel sender)
+		{
+			if (_selectedScript == sender)
+			{
+				NotifyPropertyChanged(nameof(ScriptCanClose));
+				NotifyPropertyChanged(nameof(ScriptCanVerify));
+				NotifyPropertyChanged(nameof(ScriptIsNotRunning));
+				NotifyPropertyChanged(nameof(ScriptIsRunning));
+			}
+			var running = 0;
+			lock (_scripts)
+			{
+				foreach (var script in _scripts)
+				{
+					if (script.IsRunning)
+					{
+						running++;
+					}
+				}
+			}
+			if (running != _numRunning)
+			{
+				_numRunning = running;
+				NotifyPropertyChanged(nameof(WindowTitle));
+				NotifyPropertyChanged(nameof(AnyScriptIsRunning));
+			}
+		}
+
+		private void mnu_new_tclscript_Click (object sender, RoutedEventArgs e)
+		{
+			var script = CreateTclScript(ServiceProvider.Project.CreateTclScript());
+			mnu_select_script(script);
+		}
+
+		private void mnu_close_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptCanClose)
+			{
+				return;
+			}
+			_selectedScript.Close();
+		}
+		private void mnu_export_Click (object sender, RoutedEventArgs e)
+		{
+			ExportProjectDlg.ExportProject();
+		}
+
+		private void mnu_import_Click (object sender, RoutedEventArgs e)
+		{
+			ImportProjectDlg.ImportProject();
+		}
+
+		private void mnu_new_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptSupportsFile || !ScriptIsNotRunning)
+			{
+				return;
+			}
+			_selectedScript.Control.FileNew();
+		}
+
+		private void mnu_open_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptSupportsFile || !ScriptIsNotRunning)
+			{
+				return;
+			}
+			_selectedScript.Control.FileOpen();
+		}
+
+		private void mnu_save_as_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptSupportsFile)
+			{
+				return;
+			}
+			_selectedScript.Control.FileSaveAs();
+		}
+
+		private void mnu_save_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptSupportsFile)
+			{
+				return;
+			}
+			_selectedScript.Control.FileSave();
+		}
+
+		private void mnu_verify_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptCanVerify)
+			{
+				return;
+			}
+			_selectedScript.Control.Verify();
+		}
+
+		private void mnu_run_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptIsNotRunning)
+			{
+				return;
+			}
+			_selectedScript.Control.Run();
+		}
+
+		private void mnu_stop_Click (object sender, RoutedEventArgs e)
+		{
+			if (!ScriptIsRunning)
+			{
+				return;
+			}
+			_selectedScript.Control.Stop();
+		}
+
+		private void mnu_stop_all_Click (object sender, RoutedEventArgs e)
+		{
+			if (!AnyScriptIsRunning)
+			{
+				return;
+			}
+			foreach (var script in _scripts)
+			{
+				script.Control.Stop();
+			}
+		}
+
+		private void mnu_buttons_Click (object sender, RoutedEventArgs e)
+			=> ServiceProvider.WindowsManager.ExecuteCommand(WindowsCmdConsts.UIButtonWnd_Show);
+
+		private void mnu_services_Click (object sender, RoutedEventArgs e)
+			=> ServiceProvider.WindowsManager.ExecuteCommand(WindowsCmdConsts.ExternalServicesWnd_Show);
 
 
-            if (e.Text == "=" && ServiceProvider.DeviceManager.SelectedCameraDevice != null)
-            {
-                string line = textEditor.GetLine();
-                string word = textEditor.GetWordBeforeDot();
-                if (line.StartsWith("setcamera"))
-                {
-                    if (word == "property")
-                    {
-                        completionWindow = new CompletionWindow(textEditor.TextArea);
-                        completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                        IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
-                        data.Add(new MyCompletionData("\"" + "aperture" + "\"", "", "aperture"));
-                        data.Add(new MyCompletionData("\"" + "iso" + "\"", "", "iso"));
-                        data.Add(new MyCompletionData("\"" + "shutter" + "\"", "", "shutter"));
-                        data.Add(new MyCompletionData("\"" + "ec" + "\"", "Exposure Compensation", "ec"));
-                        data.Add(new MyCompletionData("\"" + "wb" + "\"", "White Balance", "wb"));
-                        data.Add(new MyCompletionData("\"" + "cs" + "\"", "Compression Setting", "cs"));
-                        completionWindow.Show();
-                        completionWindow.Closed += delegate { completionWindow = null; };
-                    }
-                    if (word == "value")
-                    {
-                        if (line.Contains("property=\"aperture\"") &&
-                            ServiceProvider.DeviceManager.SelectedCameraDevice.FNumber != null)
-                        {
-                            completionWindow = new CompletionWindow(textEditor.TextArea);
-                            completionWindow.CompletionList.ListBox.Foreground = new SolidColorBrush(Colors.Black);
-                            IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+		private ScriptViewModel CreateTclScript (DCCProject.TclScript tclScript)
+		{
+			var menu = new MenuItem();
+			var control = new ScriptWndTclScript(tclScript);
+			var tab = new TabItem()
+			{
+				Content = control
+			};
+			var script = new ScriptViewModel(this, menu, tab, control, tclScript);
 
-                            foreach (string value in ServiceProvider.DeviceManager.SelectedCameraDevice.FNumber.Values)
-                            {
-                                data.Add(new MyCompletionData("\"" + value + "\"", value, value));
-                            }
-                            completionWindow.Show();
-                            completionWindow.Closed += delegate { completionWindow = null; };
-                        }
-                        if (line.Contains("property=\"iso\"") &&
-                            ServiceProvider.DeviceManager.SelectedCameraDevice.IsoNumber != null)
-                        {
-                            completionWindow = new CompletionWindow(textEditor.TextArea);
-                            IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+			mnu_scripts.Items.Add(menu);
+			tabs.Items.Add(tab);
+			return script;
+		}
 
-                            foreach (string value in ServiceProvider.DeviceManager.SelectedCameraDevice.IsoNumber.Values
-                                )
-                            {
-                                data.Add(new MyCompletionData("\"" + value + "\"", value, value));
-                            }
-                            completionWindow.Show();
-                            completionWindow.Closed += delegate { completionWindow = null; };
-                        }
-                        if (line.Contains("property=\"shutter\"") &&
-                            ServiceProvider.DeviceManager.SelectedCameraDevice.ShutterSpeed != null)
-                        {
-                            completionWindow = new CompletionWindow(textEditor.TextArea);
-                            IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+		private void VerifyTclScripts ()
+		{
+			lock (_scripts)
+			{
+				foreach (var tclScript in ServiceProvider.Project.TclScripts.ToList())
+				{
+					if (!(from s in _scripts
+						  where s.TclScript == tclScript
+						  select s).Any())
+					{
+						_ = CreateTclScript(tclScript);
+					}
+				}
+			}
+		}
 
-                            foreach (
-                                string value in ServiceProvider.DeviceManager.SelectedCameraDevice.ShutterSpeed.Values)
-                            {
-                                data.Add(new MyCompletionData("\"" + value + "\"", value, value));
-                            }
-                            completionWindow.Show();
-                            completionWindow.Closed += delegate { completionWindow = null; };
-                        }
-                        if (line.Contains("property=\"ec\"") &&
-                            ServiceProvider.DeviceManager.SelectedCameraDevice.ExposureCompensation != null)
-                        {
-                            completionWindow = new CompletionWindow(textEditor.TextArea);
-                            IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+		public interface IScriptControl : INotifyPropertyChanged
+		{
+			string ScriptTitle
+			{
+				get;
+			}
 
-                            foreach (
-                                string value in
-                                    ServiceProvider.DeviceManager.SelectedCameraDevice.ExposureCompensation.Values)
-                            {
-                                data.Add(new MyCompletionData("\"" + value + "\"", value, value));
-                            }
-                            completionWindow.Show();
-                            completionWindow.Closed += delegate { completionWindow = null; };
-                        }
-                        if (line.Contains("property=\"wb\"") &&
-                            ServiceProvider.DeviceManager.SelectedCameraDevice.WhiteBalance != null)
-                        {
-                            completionWindow = new CompletionWindow(textEditor.TextArea);
-                            IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+			bool SupportsFile
+			{
+				get;
+			}
 
-                            foreach (
-                                string value in
-                                    ServiceProvider.DeviceManager.SelectedCameraDevice.WhiteBalance.Values)
-                            {
-                                data.Add(new MyCompletionData("\"" + value + "\"", value, value));
-                            }
-                            completionWindow.Show();
-                            completionWindow.Closed += delegate { completionWindow = null; };
-                        }
-                        if (line.Contains("property=\"cs\"") &&
-                            ServiceProvider.DeviceManager.SelectedCameraDevice.CompressionSetting != null)
-                        {
-                            completionWindow = new CompletionWindow(textEditor.TextArea);
-                            IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+			bool SupportsVerify
+			{
+				get;
+			}
 
-                            foreach (
-                                string value in
-                                    ServiceProvider.DeviceManager.SelectedCameraDevice.CompressionSetting.Values)
-                            {
-                                data.Add(new MyCompletionData("\"" + value + "\"", value, value));
-                            }
-                            completionWindow.Show();
-                            completionWindow.Closed += delegate { completionWindow = null; };
-                        }
-                    }
-                }
-            }
-        }
+			bool IsRunning
+			{
+				get;
+			}
 
-        private void textEditor_TextArea_TextEntering(object sender, TextCompositionEventArgs e)
-        {
-            if (e.Text.Length > 0 && completionWindow != null)
-            {
-                if (!char.IsLetterOrDigit(e.Text[0]))
-                {
-                    // Whenever a non-letter is typed while the completion window is open,
-                    // insert the currently selected element.
-                    completionWindow.CompletionList.RequestInsertion(e);
-                }
-            }
-            // do not set e.Handled=true - we still want to insert the character that was typed
-        }
+			void FileNew ();
 
-        #region Implementation of IWindow
+			void FileOpen ();
 
-        public void ExecuteCommand(string cmd, object param)
-        {
-            switch (cmd)
-            {
-                case WindowsCmdConsts.ScriptWnd_Show:
-                    Dispatcher.Invoke(new Action(delegate
-                    {
-                        Owner = ServiceProvider.PluginManager.SelectedWindow as Window;
-                        Show();
-                        Activate();
-                        ServiceProvider.ScriptManager.OutPutMessageReceived +=
-                            ScriptManager_OutPutMessageReceived;
-                        _manager.Output += manager_Output;
-                        Focus();
-                    }));
-                    break;
-                case WindowsCmdConsts.ScriptWnd_Hide:
-                    ServiceProvider.ScriptManager.OutPutMessageReceived -= ScriptManager_OutPutMessageReceived;
-                    _manager.Output -= manager_Output;
-                    Hide();
-                    break;
-                case CmdConsts.All_Close:
-                    Dispatcher.Invoke(new Action(delegate
-                    {
-                        ServiceProvider.ScriptManager.OutPutMessageReceived -=
-                            ScriptManager_OutPutMessageReceived;
-                        Hide();
-                        Close();
-                    }));
-                    break;
-            }
-        }
+			void FileSave ();
 
-        private void ScriptManager_OutPutMessageReceived(object sender, MessageEventArgs e)
-        {
-            AddTclOutput(e.Message);
-        }
+			void FileSaveAs ();
 
-        #endregion
+			void Verify ();
 
-        private void MetroWindow_Closing(object sender, CancelEventArgs e)
-        {
-            if (IsVisible)
-            {
-                e.Cancel = true;
-                ServiceProvider.WindowsManager.ExecuteCommand(WindowsCmdConsts.ScriptWnd_Hide);
-            }
-        }
+			void Run ();
 
-        #region Implementation of IToolPlugin
+			void Stop ();
 
-        public bool Execute()
-        {
-            ServiceProvider.WindowsManager.ExecuteCommand(WindowsCmdConsts.ScriptWnd_Show);
-            return true;
-        }
+			void Dispose ();
+		}
 
-        #endregion
+		private class ScriptViewModel
+		{
+			internal ScriptViewModel (ScriptWnd window, MenuItem menu, TabItem tab, UserControl content, DCCProject.TclScript tclScript)
+			{
+				TclScript = tclScript;
+				_window = window;
+				Menu = menu;
+				_defaultMenuTitle = Menu.Header as string;
+				Tab = tab;
+				Tab.Visibility = Visibility.Collapsed;
+				Tab.Tag = this;
+				Control = content as IScriptControl;
+				if (Control != null)
+				{
+					IsRunning = Control.IsRunning;
+					IsNotRunning = !IsRunning;
+				}
+				SupportsMultiple = menu != window.mnu_xmlscript && menu != window.mnu_singlecommand;
+				if (content is INotifyPropertyChanged npc)
+				{
+					npc.PropertyChanged += Content_OnPropertyChanged;
+				}
+				Menu.Click += (s, e) =>
+				{
+					_window.mnu_select_script(this);
+				};
+				Menu.Header = MenuTitle;
+				Menu.IsCheckable = true;
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Tcl Script file(*.tcl)|*.tcl|Script file(*.dccscript)|*.dccscript|All files|*.*";
-            if (dlg.ShowDialog() == true)
-            {
-                try
-                {
-                    ScriptFileName = dlg.FileName;
-                    LoadScriptFile();
-                }
-                catch (Exception exception)
-                {
-                    MessageBox.Show("Error loading script file" + exception.Message);
-                    Log.Error("Error loading script file", exception);
-                }
-            }
-        }
+				lock (_window._scripts)
+				{
+					_window._scripts.Add(this);
+				}
+			}
 
-        public void LoadScriptFile()
-        {
-            if (Path.GetExtension(ScriptFileName) == ".tcl")
-            {
-                textEditorTcl.Load(ScriptFileName);
-                TabControl.SelectedItem = TclTabItem;
-            }
-            else
-            {
-                textEditor.Load(ScriptFileName);
-                TabControl.SelectedItem = XmTabItem;
-            }
-        }
+			private readonly ScriptWnd _window;
+			internal MenuItem Menu
+			{
+				get;
+			}
+			internal TabItem Tab
+			{
+				get;
+			}
 
-        public void SaveScriptFile()
-        {
-            if (IsXmlActive())
-                textEditor.Save(ScriptFileName);
-            else
-                textEditorTcl.Save(ScriptFileName);
-        }
+			internal IScriptControl Control
+			{
+				get;
+			}
 
-        private void mnu_save_as_Click(object sender, RoutedEventArgs e)
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = IsXmlActive()
-                ? "Script file(*.dccscript)|*.dccscript|All files|*.*"
-                : "Tcl Script file(*.tcl)|*.tcl|All files|*.*";
-            if (dlg.ShowDialog() == true)
-            {
-                try
-                {
-                    ScriptFileName = dlg.FileName;
-                    SaveScriptFile();
-                }
-                catch (Exception exception)
-                {
-                    MessageBox.Show("Error saving script file" + exception.Message);
-                    Log.Error("Error saving script file", exception);
-                }
-            }
-        }
+			internal DCCProject.TclScript TclScript
+			{
+				get;
+			}
 
-        private void mnu_save_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(ScriptFileName) || !File.Exists(ScriptFileName))
-                mnu_save_as_Click(null, null);
-            else
-                SaveScriptFile();
-        }
+			internal bool SupportsFile
+				=> Control?.SupportsFile ?? false;
 
-        private void mnu_verify_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsXmlActive())
-                return;
+			internal bool SupportsVerify
+				=> Control?.SupportsVerify ?? false;
 
-            mnu_save_Click(null, null);
-            ScriptObject scriptObject = null;
-            try
-            {
-                lst_output.Items.Clear();
-                scriptObject = ServiceProvider.ScriptManager.Load(ScriptFileName);
-            }
-            catch (Exception exception)
-            {
-                AddOutput("Loading error :" + exception.Message);
-            }
-            AddOutput(ServiceProvider.ScriptManager.Verify(scriptObject) ? "Verification done " : "Verification fail ");
-        }
+			internal bool SupportsRunStop
+				=> Control != null;
 
-        private void NewScript()
-        {
-            textEditor.Text = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                              "<dccscript> \n" +
-                              "   <commands>\n" +
-                              "     \n" +
-                              "   </commands>\n" +
-                              "</dccscript>";
-            ScriptFileName = null;
-        }
+			internal bool IsNotRunning
+			{
+				get;
+				private set;
+			}
 
-        public void AddOutput(string msg)
-        {
-            Dispatcher.BeginInvoke(new Action(delegate
-            {
-                lst_output.Items.Add(msg);
-                lst_output.ScrollIntoView(lst_output.Items[lst_output.Items.Count - 1]);
-            }));
-        }
+			internal bool IsRunning
+			{
+				get;
+				private set;
+			}
 
-        public void AddTclOutput(string msg)
-        {
-            Dispatcher.Invoke(new Action(delegate
-            {
-                lst_outputTcl.Items.Add(msg);
-                lst_outputTcl.ScrollIntoView(lst_outputTcl.Items[lst_outputTcl.Items.Count - 1]);
-            }));
-        }
+			internal bool SupportsMultiple
+			{
+				get;
+			}
 
-        private void mnu_run_Click(object sender, RoutedEventArgs e)
-        {
-            if (IsXmlActive())
-            {
-                mnu_save_Click(null, null);
-                ScriptObject scriptObject = null;
-                try
-                {
-                    lst_output.Items.Clear();
-                    scriptObject = ServiceProvider.ScriptManager.Load(ScriptFileName);
-                    scriptObject.CameraDevice = ServiceProvider.DeviceManager.SelectedCameraDevice;
-                }
-                catch (Exception exception)
-                {
-                    AddOutput("Loading error :" + exception.Message);
-                    return;
-                }
-                if (ServiceProvider.ScriptManager.Verify(scriptObject))
-                {
-                    ServiceProvider.ScriptManager.Execute(scriptObject);
-                }
-                else
-                {
-                    AddOutput("Error in script. Running aborted ! ");
-                }
-            }
-            else
-            {
-                try
-                {
-                    lst_outputTcl.Items.Clear();
-                    _manager.Execute(textEditorTcl.Text);
-                }
-                catch (Exception exception)
-                {
-                    AddOutput("Error in script. Running aborted ! " + exception.Message);
-                }
-            }
-        }
+			private readonly string _defaultMenuTitle;
+			internal string MenuTitle
+			{
+				get
+				{
+					var result = Control?.ScriptTitle ?? _defaultMenuTitle;
+					if (IsRunning)
+					{
+						result += " (running)";
+					}
+					return result;
+				}
+			}
 
-        private bool IsXmlActive()
-        {
-            return TabControl.SelectedItem == XmTabItem;
-        }
+			internal void Close ()
+			{
+				if (SupportsMultiple)
+				{
+					lock (_window._scripts)
+					{
+						_window._scripts.Remove(this);
+						Control?.Dispose();
+					}
+					var selectTab = _window._selectedScript == this;
+					_window.mnu_scripts.Items.Remove(Menu);
+					_window.tabs.Items.Remove(Tab);
+					if (selectTab || _window._selectedScript == null)
+					{
+						_window.mnu_select_script(null);
+					}
+					if (TclScript != null)
+					{
+						ServiceProvider.Project.RemoveTclScript(TclScript);
+					}
+				}
+			}
 
-        private void manager_Output(string message, bool newline)
-        {
-            Dispatcher.Invoke(new Action(delegate
-            {
-                lst_outputTcl.Items.Add(message);
-                lst_outputTcl.SelectedItem = message;
-                lst_outputTcl.ScrollIntoView(message);
-            }));
-        }
+			private void Content_OnPropertyChanged (object sender, PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == "IsRunning")
+				{
+					IsRunning = Control.IsRunning;
+					IsNotRunning = !IsRunning;
+					_window.script_StateChanged(this);
+					_window.Dispatcher.Invoke(new Action(delegate
+					{
+						Menu.Header = MenuTitle;
+					}));
+				}
+				else if (e.PropertyName == "ScriptTitle")
+				{
+					_window.Dispatcher.Invoke(new Action(delegate
+					{
+						Menu.Header = MenuTitle;
+					}));
+				}
+			}
+		}
 
-        private void mnu_stop_Click(object sender, RoutedEventArgs e)
-        {
-            if (IsXmlActive())
-                ServiceProvider.ScriptManager.Stop();
-            else
-                _manager.Stop();
-        }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var processor = new CommandLineProcessor();
-                var resp = processor.Pharse(TextBoxCmd.Text.Split(' '));
-                var list = resp as IEnumerable<string>;
-                if (list != null)
-                {
-                    TextBlockError.Text = "";
-                    foreach (var o in list)
-                    {
-                        TextBlockError.Text += o + "\n";
-                    }
-                }
-                else
-                {
-                    if (resp != null)
-                        TextBlockError.Text = resp.ToString();
-                }
-                lst_cmd.Items.Add(TextBoxCmd.Text);
-            }
-            catch (Exception ex)
-            {
-                TextBlockError.Text = ex.Message;
-            }
-        }
-
-        private void lst_cmd_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (lst_cmd.SelectedItem != null)
-                TextBoxCmd.Text = lst_cmd.SelectedItem.ToString();
-        }
-
-        private void TextBoxCmd_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-                Button_Click(null, null);
-
-        }
-
-        private void Label_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            PhotoUtils.Run("http://digicamcontrol.com/wiki/index.php/Single_Command_System");
-        }
-    }
+	}
 }
